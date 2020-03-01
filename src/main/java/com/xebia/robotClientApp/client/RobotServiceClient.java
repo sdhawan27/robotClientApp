@@ -2,28 +2,22 @@ package com.xebia.robotClientApp.client;
 
 import com.xebia.robotClientApp.domain.Robot;
 import com.xebia.robotClientApp.domain.RobotResponse;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.*;
-import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestTemplate;
+import com.xebia.robotClientApp.client.fallback.RobotServiceFallback;
+import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 
-import java.util.Arrays;
-import java.util.List;
+@FeignClient(value="robotService", fallback = RobotServiceFallback.class)
+public interface RobotServiceClient {
 
-@Component
-@Slf4j
-public class RobotServiceClient extends RestTemplate {
+    @PostMapping(path="/walk", consumes = "application/json", produces = "application/json")
+    public ResponseEntity<RobotResponse> walkingService(@RequestBody Robot robot);
 
-    private static final String RS_URL ="http://localhost:8081/";
-
-    public RobotResponse callService(final String serviceName, final Robot robot) {
-        log.info("into rest client");
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
-        HttpEntity<String> entity = new HttpEntity<String>(headers);
-        return this.postForEntity(RS_URL + serviceName, robot, RobotResponse.class).getBody();
-    }
+    @PostMapping(path="/liftWeight", consumes = "application/json", produces = "application/json")
+    public ResponseEntity<RobotResponse> liftWeight(@RequestBody Robot robot);
 
 
+    @PostMapping(path="/scan", consumes = "application/json", produces = "application/json")
+    public ResponseEntity<RobotResponse> displayPrice(@RequestBody Robot robot) ;
 }
